@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f30a2c10ab3f56b4c91f10383214351a
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _HeightTex: {instanceID: 0}
+  - _SandTex: {fileID: 2800000, guid: 18734292358c9dc449203b1697cf07ab, type: 3}
+  - _GTex: {fileID: 2800000, guid: ea4a19cec9280a94b9298da436612b53, type: 3}
+  - _RTex: {fileID: 2800000, guid: b5d8b8e613a22804fb35bff6b3cba4db, type: 3}
+  - _STex: {fileID: 2800000, guid: 56672590d8c6928409e1d851a930c5c1, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

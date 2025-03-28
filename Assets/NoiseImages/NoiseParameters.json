@@ -1,0 +1,10 @@
+{
+    "perlinTexSizeX": 256,
+    "perlinTexSizeY": 256,
+    "noiseScale": 4.0,
+    "randomizeNoiseOffset": true,
+    "perlinOffset": {
+        "x": 5406.60302734375,
+        "y": 2895.90771484375
+    }
+}
