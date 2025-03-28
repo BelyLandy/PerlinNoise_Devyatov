@@ -4,6 +4,7 @@ using UnityEditor;
 [CustomEditor(typeof(PerlinGenerator))]
 public class PerlinGeneratorEditor : Editor
 {
+    SerializedProperty generatedTexture;
     SerializedProperty perlinTexSizeX;
     SerializedProperty perlinTexSizeY;
     SerializedProperty noiseScale;
@@ -29,9 +30,14 @@ public class PerlinGeneratorEditor : Editor
     
     SerializedProperty treePrefab;
     SerializedProperty treeSpawnDensity;
+    
+    SerializedProperty currentPlane;
+    SerializedProperty currentWaterPlane;
+    SerializedProperty currentTrees;
 
     protected void OnEnable()
     {
+        generatedTexture = serializedObject.FindProperty("generatedTexture");
         perlinTexSizeX = serializedObject.FindProperty("perlinTexSizeX");
         perlinTexSizeY = serializedObject.FindProperty("perlinTexSizeY");
         noiseScale = serializedObject.FindProperty("noiseScale");
@@ -57,15 +63,30 @@ public class PerlinGeneratorEditor : Editor
         
         treePrefab = serializedObject.FindProperty("treePrefab");
         treeSpawnDensity = serializedObject.FindProperty("treeSpawnDensity");
+
+        currentPlane = serializedObject.FindProperty("currentPlane");
+        currentWaterPlane = serializedObject.FindProperty("currentWaterPlane");
+        currentTrees = serializedObject.FindProperty("currentTrees");
     }
 
     public override void OnInspectorGUI()
     {
+        if (Application.isPlaying)
+        {
+            EditorGUILayout.BeginVertical("box");
+            EditorGUILayout.LabelField("Режим осмотра ланшафта!", EditorStyles.boldLabel);
+            EditorGUILayout.EndVertical();
+            
+            //Debug.LogWarning("Функции создания и редактирования мэшей недоступны в Playmode!");
+            return;
+        }
+        
         serializedObject.Update();
 
         // Блок "Настройки шума Перлина".
         EditorGUILayout.BeginVertical("box");
-        EditorGUILayout.LabelField("Настройки шума Перлина.", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Генерация ландшафта с шумом Перлина.", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(generatedTexture, new GUIContent("Текстура шума"));
         EditorGUILayout.PropertyField(perlinTexSizeX);
         EditorGUILayout.PropertyField(perlinTexSizeY);
         EditorGUILayout.PropertyField(noiseScale);
@@ -113,6 +134,7 @@ public class PerlinGeneratorEditor : Editor
         EditorGUILayout.PropertyField(addWater, new GUIContent("Генерировать ли воду?"));
         EditorGUILayout.PropertyField(targetMeshFilter);
         EditorGUILayout.PropertyField(terrainShader, new GUIContent("Шейдер плейна"));
+        EditorGUILayout.PropertyField(currentPlane, new GUIContent("Объект плейн"));
         if (GUILayout.Button("Сгенерировать новый плейн"))
         {
             ((PerlinGenerator)target).GeneratePlane();
@@ -162,6 +184,7 @@ public class PerlinGeneratorEditor : Editor
         EditorGUILayout.LabelField("Настройки воды.", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(waterLevel, new GUIContent("Уровень воды (в единицах мира)"));
         EditorGUILayout.PropertyField(waterShader, new GUIContent("Шейдер воды"));
+        EditorGUILayout.PropertyField(currentWaterPlane, new GUIContent("Объект воды"));
         if (GUILayout.Button("Добавить воду"))
         {
             ((PerlinGenerator)target).AddWater();
@@ -179,6 +202,7 @@ public class PerlinGeneratorEditor : Editor
         EditorGUILayout.LabelField("Генерация деревьев.", EditorStyles.boldLabel);
         EditorGUILayout.PropertyField(treePrefab, new GUIContent("Префаб дерева"));
         EditorGUILayout.PropertyField(treeSpawnDensity, new GUIContent("Плотность деревьев"));
+        EditorGUILayout.PropertyField(currentTrees, new GUIContent("Объект деревьев"));
         if (GUILayout.Button("Сгенерировать деревья"))
         {
             ((PerlinGenerator)target).GenerateTrees();

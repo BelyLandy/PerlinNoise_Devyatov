@@ -73,10 +73,11 @@ public class PerlinGenerator : MonoBehaviour
     
     [Range(0f, 1f)] public float treeSpawnDensity = 0.1f;
 
-    private Texture2D generatedTexture;
+    public Texture2D generatedTexture;
     
-    private GameObject currentPlane;
-    private GameObject currentWaterPlane;
+    public GameObject currentPlane;
+    public GameObject currentWaterPlane;
+    public GameObject currentTrees;
 
     /// <summary>
     /// Генерирует текстуру шума Перлина с учетом градиента и назначает её на RawImage.
@@ -142,7 +143,6 @@ public class PerlinGenerator : MonoBehaviour
     /// </summary>
     public void LoadNoiseTexture()
     {
-    #if UNITY_EDITOR
         string fullPath = Path.Combine(exportPath, exportFileName);
         if (!File.Exists(fullPath))
         {
@@ -166,9 +166,6 @@ public class PerlinGenerator : MonoBehaviour
         {
             Debug.LogWarning("Не удалось загрузить текстуру.");
         }
-    #else
-        Debug.LogWarning("Загрузка текстуры доступна только в редакторе.");
-    #endif
     }
 
     /// <summary>
@@ -177,7 +174,6 @@ public class PerlinGenerator : MonoBehaviour
     /// </summary>
     public void LoadNoiseParameters()
     {
-    #if UNITY_EDITOR
         string path = Path.Combine(exportPath, "NoiseParameters.json");
         if (File.Exists(path))
         {
@@ -204,9 +200,6 @@ public class PerlinGenerator : MonoBehaviour
         {
             Debug.LogWarning("Файл параметров не найден по пути: " + path);
         }
-    #else
-        Debug.LogWarning("Загрузка параметров доступна только в редакторе!");
-    #endif
     }
 
     /// <summary>
@@ -283,7 +276,8 @@ public class PerlinGenerator : MonoBehaviour
     public void GeneratePlane()
     {
         ClearTrees();
-        ClearPlanesAndWater();
+        ClearWater();
+        ClearPlanes();
         
         if (currentPlane != null)
         {
@@ -296,6 +290,7 @@ public class PerlinGenerator : MonoBehaviour
         }
 
         GameObject planeObject = new GameObject("Procedural Plane");
+        planeObject.tag = "Plane";
         MeshFilter mf = planeObject.AddComponent<MeshFilter>();
         MeshRenderer mr = planeObject.AddComponent<MeshRenderer>();
         if (terrainShader != null)
@@ -398,6 +393,7 @@ public class PerlinGenerator : MonoBehaviour
         }
 
         GameObject waterPlane = new GameObject("Water Plane");
+        waterPlane.tag = "Water";
         MeshFilter mf = waterPlane.AddComponent<MeshFilter>();
         MeshRenderer mr = waterPlane.AddComponent<MeshRenderer>();
         Mesh mesh = new Mesh();
@@ -465,6 +461,8 @@ public class PerlinGenerator : MonoBehaviour
     /// </summary>
     public void AddWater()
     {
+        ClearWater();
+        
         if (targetMeshFilter != null)
         {
             Mesh mesh = targetMeshFilter.sharedMesh;
@@ -490,7 +488,6 @@ public class PerlinGenerator : MonoBehaviour
     /// </summary>
     public void SaveMeshAsPrefab()
     {
-        #if UNITY_EDITOR
         if (currentPlane != null)
         {
             if (includeWaterInPrefab)
@@ -508,7 +505,7 @@ public class PerlinGenerator : MonoBehaviour
             
             if (includeTreesInPrefab)
             {
-                GameObject treeParent = GameObject.Find("Tree Clusters");
+                GameObject treeParent = GameObject.FindWithTag("Tree");
                 if (treeParent == null)
                 {
                     Debug.LogWarning("Галочка 'Сохранить деревья' установлена, но контейнер деревьев не найден или деревья не сгенерированы!");
@@ -645,9 +642,6 @@ public class PerlinGenerator : MonoBehaviour
         {
             Debug.LogWarning("Нет сгенерированного плейна для сохранения!");
         }
-        #else
-            Debug.LogWarning("Сохранение префаба доступно только в редакторе!");
-        #endif
     }
 
     /// <summary>
@@ -655,7 +649,6 @@ public class PerlinGenerator : MonoBehaviour
     /// </summary>
     public void SaveNoiseParameters()
     {
-    #if UNITY_EDITOR
         NoiseParameters parameters = new NoiseParameters();
         parameters.perlinTexSizeX = perlinTexSizeX;
         parameters.perlinTexSizeY = perlinTexSizeY;
@@ -671,9 +664,6 @@ public class PerlinGenerator : MonoBehaviour
 
         File.WriteAllText(path, json);
         Debug.Log("Noise parameters сохранен в " + path);
-    #else
-        Debug.LogWarning("Сохранение параметров доступно только в редакторе!");
-    #endif
     }
 
     /// <summary>
@@ -681,6 +671,8 @@ public class PerlinGenerator : MonoBehaviour
     /// </summary>
     public void GenerateTrees()
     {
+        ClearTrees();
+        
         if (targetMeshFilter == null)
         {
             Debug.LogWarning("MeshFilter не назначен, невозможно генерировать деревья!");
@@ -699,26 +691,31 @@ public class PerlinGenerator : MonoBehaviour
             Debug.LogWarning("У целевого меша отсутствуют данные!");
             return;
         }
-
+        
         Vector3[] vertices = mesh.vertices;
         Vector2[] uvs = mesh.uv;
-        
-        GameObject treeParent = new GameObject("Tree Clusters");
-        treeParent.transform.parent = currentPlane != null ? currentPlane.transform : transform;
 
+        GameObject treesParent = GameObject.FindWithTag("Tree");
+        if (treesParent == null)
+        {
+            treesParent = new GameObject("Trees");
+            treesParent.tag = "Tree";
+        }
+
+        currentTrees = treesParent;
+        
         for (int i = 0; i < vertices.Length; i++)
         {
             float sample = Mathf.PerlinNoise(perlinOffset.x + uvs[i].x * noiseScale,
                 perlinOffset.y + uvs[i].y * noiseScale);
-            
+
             if (sample > 0.18f && sample < 0.4f)
             {
                 if (Random.value < treeSpawnDensity)
                 {
                     Vector3 worldPos = targetMeshFilter.transform.TransformPoint(vertices[i]);
                     worldPos.y += 0.1f;
-                    GameObject tree = Instantiate(treePrefab, worldPos, Quaternion.Euler(0, Random.Range(0, 360f), 0),
-                        treeParent.transform);
+                    Instantiate(treePrefab, worldPos, Quaternion.Euler(0, Random.Range(0, 360f), 0), treesParent.transform);
                 }
             }
         }
@@ -726,57 +723,47 @@ public class PerlinGenerator : MonoBehaviour
         Debug.Log("Деревья сгенерированы.");
     }
 
+
     /// <summary>
     /// Удаляет все ранее сгенерированные деревья (по имени).
     /// </summary>
     public void ClearTrees()
     {
-        GameObject treeParent = GameObject.Find("Tree Clusters");
-        if (treeParent != null)
+        GameObject[] trees = GameObject.FindGameObjectsWithTag("Tree");
+        foreach (GameObject tree in trees)
         {
-        #if UNITY_EDITOR
-            DestroyImmediate(treeParent);
-        #else
-            Destroy(treeParent);
-        #endif
-            Debug.Log("Удалены все ранее сгенерированные деревья.");
+            DestroyImmediate(tree);
         }
+        
+        Debug.Log("Удалены все ранее сгенерированные деревья.");
     }
     
     /// <summary>
     /// Удаляет все ранее сгенерированные плейны и водные плоскости (по имени).
     /// </summary>
-    private void ClearPlanesAndWater()
+    private void ClearPlanes()
     {
-        GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
-        foreach (GameObject obj in allObjects)
+        GameObject[] allPlanes = GameObject.FindGameObjectsWithTag("Plane");
+
+        foreach (GameObject obj in allPlanes)
         {
-            if (obj.name == "Procedural Plane" || obj.name == "Water Plane")
-            {
-            #if UNITY_EDITOR
-                DestroyImmediate(obj);
-            #else
-                Destroy(obj);
-            #endif
-            }
+            DestroyImmediate(obj);
         }
-        Debug.Log("Удалены все ранее сгенерированные плейны и водная плоскость.");
+
+        Debug.Log("Удалены все ранее сгенерированные плейны.");
     }
     
     /// <summary>
-    /// Удаляет все ранее сгенерированные деревья (объект с именем "Tree Clusters").
+    /// Удаляет все ранее сгенерированные деревья.
     /// </summary>
     public void ClearWater()
     {
-        GameObject waterParent = GameObject.Find("Water Plane");
-        if (waterParent != null)
+        GameObject[] waterLst = GameObject.FindGameObjectsWithTag("Water");
+        foreach (GameObject _water in waterLst)
         {
-        #if UNITY_EDITOR
-            DestroyImmediate(waterParent);
-        #else
-            Destroy(treeParent);
-        #endif
-            Debug.Log("Удалена вода.");
+            DestroyImmediate(_water);
         }
+        
+        Debug.Log("Удалена вода.");
     }
 }
