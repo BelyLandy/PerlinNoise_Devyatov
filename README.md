@@ -18,17 +18,17 @@
 
 И в окне Инспектора перед нами открывается окно настроек нашего ландшафта.
 
-![image](https://github.com/user-attachments/assets/17f54db2-2051-4ca5-b56a-26df934fcf2c)
+![image](https://github.com/user-attachments/assets/35176f0d-5830-43fc-b2ea-d2083003a532)
 
 ![image](https://github.com/user-attachments/assets/bf32de8b-a928-4a1e-a481-152857c6b965)
 
-![image](https://github.com/user-attachments/assets/0a396680-7278-4bfe-9d58-9d69269161aa)
+![image](https://github.com/user-attachments/assets/cd554d57-af5e-4d5d-ae71-9b3ccd93e932)
 
 ![image](https://github.com/user-attachments/assets/e7d5a175-9db3-4239-ac10-00d9d5d900c0)
 
-![image](https://github.com/user-attachments/assets/f31d90ca-5116-4778-925c-a6c5a954fdf5)
+![image](https://github.com/user-attachments/assets/bd563834-0a23-4609-a67a-cdf8119a249d)
 
-![image](https://github.com/user-attachments/assets/cf95cee0-870f-4375-a41b-9e6123a24ff1)
+![image](https://github.com/user-attachments/assets/3858e25e-5a63-461c-bbdc-48fe2dda575f)
 
 ## Быстрый старт.
 
